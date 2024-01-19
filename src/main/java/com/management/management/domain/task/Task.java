@@ -1,6 +1,6 @@
-package domain.task;
+package com.management.management.domain.task;
 
-import domain.project.Project;
+import com.management.management.domain.project.Project;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

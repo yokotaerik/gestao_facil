@@ -1,4 +1,4 @@
-package enums;
+package com.management.management.enums;
 
 import lombok.Getter;
 
