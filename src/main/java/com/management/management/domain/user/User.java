@@ -2,7 +2,6 @@ package com.management.management.domain.user;
 
 
 import com.management.management.domain.project.Project;
-import com.management.management.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;

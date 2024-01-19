@@ -1,4 +1,4 @@
-package com.management.management.enums;
+package com.management.management.domain.user;
 
 import lombok.Getter;
 
