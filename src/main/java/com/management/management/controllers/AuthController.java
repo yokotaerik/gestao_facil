@@ -1,6 +1,7 @@
 package com.management.management.controllers;
 
 import com.management.management.domain.user.*;
+import com.management.management.domain.user.dtos.*;
 import com.management.management.infra.security.TokenService;
 import com.management.management.services.AuthorizationService;
 import com.management.management.services.UserService;
@@ -41,7 +42,7 @@ public class AuthController {
         try {
             userService.createManager(data);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
         return ResponseEntity.ok().body("Manager successfully created");
@@ -58,7 +59,7 @@ public class AuthController {
             String successMessage = String.format("Employee successfully created with password: %s", password);
             return ResponseEntity.ok().body(successMessage);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
     }
@@ -72,7 +73,7 @@ public class AuthController {
             var auth = authenticationManager.authenticate(usernamePassword);
             var token = tokenService.generateToken((User) auth.getPrincipal());
 
-            return ResponseEntity.ok(token);
+            return ResponseEntity.ok(new LoginResponseDTO(token));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new LoginResponseDTO(null));
         } catch (Exception e) {
@@ -82,7 +83,7 @@ public class AuthController {
 
 
     @PatchMapping("/change_password")
-    public ResponseEntity changePassword(@RequestBody String password){
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO data){
         try{
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -98,11 +99,11 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
 
-            userService.changePassword(user, password);
+            userService.changePassword(user, data.password(), data.confirmPassword());
 
             return ResponseEntity.ok("Password successfully updated");
         } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
     }

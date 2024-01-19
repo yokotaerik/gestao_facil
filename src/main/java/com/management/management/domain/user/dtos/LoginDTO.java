@@ -1,4 +1,4 @@
-package com.management.management.domain.user;
+package com.management.management.domain.user.dtos;
 
 import lombok.Getter;
 
