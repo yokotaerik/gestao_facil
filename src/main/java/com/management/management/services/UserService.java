@@ -30,7 +30,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void createEmployee(RegisterEmployeeDTO data) {
+    public String createEmployee(RegisterEmployeeDTO data) {
 
         String username = generateUsername(data.name(), data.surname());
 
@@ -39,6 +39,8 @@ public class UserService {
         User user = new User(null, data.name(), data.surname(), username, data.email(), password, UserRole.MANAGER);
 
         userRepository.save(user);
+
+        return password;
     }
 
     private String generateUsername(String name, String surname) {

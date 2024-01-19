@@ -48,18 +48,19 @@ public class AuthController {
     }
 
     @PostMapping("/register_employee")
-    public ResponseEntity<String> createEmployee(@RequestBody RegisterEmployeeDTO data) {
+    public ResponseEntity<?> createEmployee(@RequestBody RegisterEmployeeDTO data) {
         User user = userService.findByEmail(data.email());
 
         if (user != null) return ResponseEntity.badRequest().body("This email is in use");
 
         try {
-            userService.createEmployee(data);
+            String password = userService.createEmployee(data);
+            String successMessage = String.format("Employee successfully created with password: %s", password);
+            return ResponseEntity.ok().body(successMessage);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 
-        return ResponseEntity.ok().body("Employee successfully created");
     }
 
 
