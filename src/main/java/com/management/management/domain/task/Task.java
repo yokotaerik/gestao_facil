@@ -23,6 +23,8 @@ public class Task implements Serializable {
 
     private String description;
 
+    private Priority priority;
+
     private Instant timeExpected;
 
     private Instant timeDone;

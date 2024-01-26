@@ -1,7 +1,7 @@
 package com.management.management.controllers;
 
 import com.management.management.domain.user.*;
-import com.management.management.domain.user.dtos.*;
+import com.management.management.dtos.user.*;
 import com.management.management.infra.security.TokenService;
 import com.management.management.services.AuthorizationService;
 import com.management.management.services.UserService;
@@ -35,10 +35,6 @@ public class AuthController {
     @PostMapping("/register_manager")
     public ResponseEntity<String> register(@RequestBody RegisterManagerDTO data) {
 
-        User user = userService.findByEmail(data.email());
-
-        if (user != null) return ResponseEntity.badRequest().body("This email is in use");
-
         try {
             userService.createManager(data);
         } catch (Exception e) {
@@ -50,9 +46,6 @@ public class AuthController {
 
     @PostMapping("/register_employee")
     public ResponseEntity<?> createEmployee(@RequestBody RegisterEmployeeDTO data) {
-        User user = userService.findByEmail(data.email());
-
-        if (user != null) return ResponseEntity.badRequest().body("This email is in use");
 
         try {
             String password = userService.createEmployee(data);
@@ -99,7 +92,7 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
             }
 
-            userService.changePassword(user, data.password(), data.confirmPassword());
+            userService.changePassword(user, data);
 
             return ResponseEntity.ok("Password successfully updated");
         } catch (Exception e){

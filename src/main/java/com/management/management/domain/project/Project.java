@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -44,5 +45,11 @@ public class Project implements Serializable {
 
     private LocalDate deadline;
 
-    private LocalDate whenDone;
+    private LocalDate createdAt;
+
+    private LocalDate finishAt;
+
+    private Instant timeExpected;
+
+
 }
