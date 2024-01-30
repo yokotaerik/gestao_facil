@@ -2,6 +2,7 @@ package com.management.management.domain.user;
 
 
 import com.management.management.domain.project.Project;
+import com.management.management.domain.task.Task;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -36,11 +37,14 @@ public class User implements UserDetails {
 
     private UserRole role;
 
-    @ManyToMany(mappedBy = "employees")
+    @ManyToMany(mappedBy = "employees", cascade = CascadeType.ALL)
     private List<Project> projectsWorked = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "managers")
+    @ManyToMany(mappedBy = "managers", cascade = CascadeType.ALL)
     private List<Project> projectsManaged = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "responsible", cascade = CascadeType.ALL)
+    private List<Task> tasks = new ArrayList<>();
 
     public User(Long id, String name, String surname, String username, String email, String password, UserRole role) {
         this.id = id;
@@ -57,10 +61,6 @@ public class User implements UserDetails {
         List<GrantedAuthority> authorities = new ArrayList<>();
 
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-
-        if (this.role == UserRole.MANAGER || this.role == UserRole.ADMIN) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_STAFF"));
-        }
 
         if (this.role == UserRole.ADMIN) {
             authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));

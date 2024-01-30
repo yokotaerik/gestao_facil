@@ -1,8 +1,8 @@
 package com.management.management.domain.task;
 
-public enum Priority {
+public enum TaskPriority {
 
-
+    NONE,
     LOW,
     MEDIUM,
     HIGH,

@@ -32,36 +32,21 @@ public class AuthController {
     @Autowired
     AuthorizationService authorizationService;
 
-    @PostMapping("/register_manager")
-    public ResponseEntity<String> register(@RequestBody RegisterManagerDTO data) {
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody RegisterDTO data) {
 
         try {
-            userService.createManager(data);
+            userService.create(data);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 
-        return ResponseEntity.ok().body("Manager successfully created");
+        return ResponseEntity.ok().body("User successfully created");
     }
-
-    @PostMapping("/register_employee")
-    public ResponseEntity<?> createEmployee(@RequestBody RegisterEmployeeDTO data) {
-
-        try {
-            String password = userService.createEmployee(data);
-            String successMessage = String.format("Employee successfully created with password: %s", password);
-            return ResponseEntity.ok().body(successMessage);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-
-    }
-
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO data) {
         try {
-
             var usernamePassword = new UsernamePasswordAuthenticationToken(data.username(), data.password());
             var auth = authenticationManager.authenticate(usernamePassword);
             var token = tokenService.generateToken((User) auth.getPrincipal());
@@ -78,20 +63,7 @@ public class AuthController {
     @PatchMapping("/change_password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO data){
         try{
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-            if (authentication == null || !authentication.isAuthenticated()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-            }
-
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
-            User user = (User) authorizationService.loadUserByUsername(userDetails.getUsername());
-
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-            }
-
+            User user = (User) authorizationService.getCurrentUser();
             userService.changePassword(user, data);
 
             return ResponseEntity.ok("Password successfully updated");

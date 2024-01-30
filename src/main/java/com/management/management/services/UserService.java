@@ -1,8 +1,7 @@
 package com.management.management.services;
 
 import com.management.management.dtos.user.ChangePasswordDTO;
-import com.management.management.dtos.user.RegisterEmployeeDTO;
-import com.management.management.dtos.user.RegisterManagerDTO;
+import com.management.management.dtos.user.RegisterDTO;
 import com.management.management.domain.user.User;
 import com.management.management.domain.user.UserRole;
 import com.management.management.exceptions.PasswordException;
@@ -15,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.util.Optional;
 
 
 @Service
@@ -26,7 +24,13 @@ public class UserService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public void createManager(RegisterManagerDTO data) throws Exception {
+
+    public User findByUsername(String username){
+       return userRepository.findByUsername(username)
+               .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+    }
+
+    public void create(RegisterDTO data) throws Exception {
 
         checkDuplicateEmail(data.email());
 
@@ -36,29 +40,9 @@ public class UserService {
 
         String username = generateUsername(data.name(), data.surname());
 
-        User user = new User(null, data.name(), data.surname(), username, data.email(), encryptedPassword, UserRole.MANAGER);
+        User user = new User(null, data.name(), data.surname(), username, data.email(), encryptedPassword, UserRole.USER);
 
         userRepository.save(user);
-    }
-
-
-
-    public String createEmployee(RegisterEmployeeDTO data) throws Exception {
-        int PASSWORD_SIZE = 8;
-
-        checkDuplicateEmail(data.email());
-
-        String username = generateUsername(data.name(), data.surname());
-
-        String password = gerenateRandomString(PASSWORD_SIZE);
-
-        String encryptedPassword = passwordEncoder.encode(password);
-
-        User user = new User(null, data.name(), data.surname(), username, data.email(), encryptedPassword, UserRole.EMPLOYEE);
-
-        userRepository.save(user);
-
-        return password;
     }
 
 
@@ -111,12 +95,12 @@ public class UserService {
 
         String username = String.join(".",firstName).toLowerCase() + "." + lastName[lastName.length - 1].toLowerCase();
 
-        User user = userRepository.findByUsername(username);
+        User user = findByUsername(username);
 
         int count = 1;
         while (user != null) {
             username = username + count;
-            user = userRepository.findByUsername(username);
+            user = findByUsername(username);
             count += 1;
         }
 
@@ -131,8 +115,13 @@ public class UserService {
         }
     }
 
-    public User findByEmail(String email) {
+    public UserDetails findByEmail(String email) {
         return (User) userRepository.findByEmail(email);
+    }
+
+    public User findById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
     }
 
 }
