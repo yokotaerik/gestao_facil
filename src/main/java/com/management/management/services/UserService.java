@@ -1,7 +1,7 @@
 package com.management.management.services;
 
-import com.management.management.dtos.user.ChangePasswordDTO;
-import com.management.management.dtos.user.RegisterDTO;
+import com.management.management.dtos.user.auth.ChangePasswordDTO;
+import com.management.management.dtos.user.auth.RegisterDTO;
 import com.management.management.domain.user.User;
 import com.management.management.domain.user.UserRole;
 import com.management.management.exceptions.PasswordException;

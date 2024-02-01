@@ -4,7 +4,7 @@ import com.management.management.domain.project.Project;
 import com.management.management.domain.task.Task;
 import com.management.management.domain.task.TaskStatus;
 import com.management.management.domain.user.User;
-import com.management.management.dtos.task.TaskDTO;
+import com.management.management.dtos.task.AddTaskDTO;
 import com.management.management.exceptions.NotAllowedException;
 import com.management.management.repositories.ProjectRepository;
 import com.management.management.repositories.TaskRepository;
@@ -29,11 +29,12 @@ public class TaskService {
                 .orElseThrow(() -> new IllegalArgumentException("Project not found: " + id));
     }
 
-    public void createTask(TaskDTO data, Project project, User manager) throws NotAllowedException {
+    public void createTask(AddTaskDTO data, Project project, User manager) throws NotAllowedException {
         projectService.checkManagerPermission(manager, project);
         Task task = new Task(null, data.name(), data.description(), data.taskPriority(), data.timeExpected(), project);
         project.getTasks().add(task);
-
+        project.calculateProgress();
+        project.calculateTimeExpected();
         projectRepository.save(project);
         taskRepository.save(task);
     }
@@ -42,9 +43,7 @@ public class TaskService {
         Project project = task.getProject();
         projectService.checkManagerPermission(manager, project);
 
-        if (!userIsOnProject(project, responsible)) {
-            throw new NotAllowedException("User needs to be in the project");
-        }
+        projectService.userIsOnProject(responsible, project);
 
         if (!isOnTask(task, responsible)) {
             task.getResponsible().add(responsible);
@@ -76,6 +75,9 @@ public class TaskService {
         try{
             TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
             task.setStatus(taskStatus);
+            Project project = task.getProject();
+            project.calculateProgress();
+            projectRepository.save(project);
             taskRepository.save(task);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status");
@@ -97,10 +99,6 @@ public class TaskService {
         boolean taskOnUser = responsible.getTasks().contains(task);
 
         return userOnTask && taskOnUser;
-    }
-
-    private boolean userIsOnProject(Project project, User user){
-        return project.getManagers().contains(user) || project.getEmployees().contains(user);
     }
 
 }

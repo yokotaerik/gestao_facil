@@ -3,9 +3,11 @@ package com.management.management.controllers;
 import com.management.management.domain.project.Project;
 import com.management.management.domain.task.Task;
 import com.management.management.domain.user.User;
+import com.management.management.dtos.task.EntireTaskDTO;
 import com.management.management.dtos.task.StatusDTO;
-import com.management.management.dtos.task.TaskDTO;
+import com.management.management.dtos.task.AddTaskDTO;
 import com.management.management.dtos.user.UsernameDTO;
+import com.management.management.mapper.TaskMapper;
 import com.management.management.services.AuthorizationService;
 import com.management.management.services.ProjectService;
 import com.management.management.services.TaskService;
@@ -31,9 +33,11 @@ public class TaskController {
     @Autowired
     UserService userService;
 
+    TaskMapper taskMapper;
+
 
     @PostMapping("/create/{id}")
-    ResponseEntity<?> createTask(@RequestBody TaskDTO data, @PathVariable Long id){
+    ResponseEntity<?> createTask(@RequestBody AddTaskDTO data, @PathVariable Long id){
         try{
             User manager = authorizationService.getCurrentUser();
             Project project = projectService.findById(id);
@@ -41,6 +45,21 @@ public class TaskController {
             return ResponseEntity.ok().body("OK");
         } catch (Exception e){
            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/{id}")
+    ResponseEntity<?> findTask(@PathVariable Long id){
+        try{
+            User user = authorizationService.getCurrentUser();
+            Task task = taskService.findById(id);
+            Project project = task.getProject();
+            projectService.userIsOnProject(user, project);
+            EntireTaskDTO entireTaskDTO = taskMapper.entireTaskDTO(task);
+            return ResponseEntity.ok().body(entireTaskDTO);
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

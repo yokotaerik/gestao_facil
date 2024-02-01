@@ -1,7 +1,10 @@
 package com.management.management.controllers;
 
 import com.management.management.domain.user.*;
-import com.management.management.dtos.user.*;
+import com.management.management.dtos.user.auth.ChangePasswordDTO;
+import com.management.management.dtos.user.auth.LoginDTO;
+import com.management.management.dtos.user.auth.LoginResponseDTO;
+import com.management.management.dtos.user.auth.RegisterDTO;
 import com.management.management.infra.security.TokenService;
 import com.management.management.services.AuthorizationService;
 import com.management.management.services.UserService;
@@ -10,10 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

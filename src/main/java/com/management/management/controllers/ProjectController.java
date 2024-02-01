@@ -2,14 +2,19 @@ package com.management.management.controllers;
 
 import com.management.management.domain.project.Project;
 import com.management.management.domain.user.User;
-import com.management.management.dtos.project.ProjectDTO;
+import com.management.management.dtos.project.AddProjectDTO;
+import com.management.management.dtos.project.EntireProjectDTO;
+import com.management.management.dtos.project.ProjectInfoDTO;
 import com.management.management.dtos.user.UsernameDTO;
+import com.management.management.mapper.ProjectMapper;
 import com.management.management.services.AuthorizationService;
 import com.management.management.services.ProjectService;
 import com.management.management.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/project")
@@ -24,9 +29,53 @@ public class ProjectController {
     @Autowired
     UserService userService;
 
+    ProjectMapper projectMapper;
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> findProjectById(@PathVariable Long id){
+        try{
+            User user = authorizationService.getCurrentUser();
+
+            Project project = projectService.findById(id);
+            EntireProjectDTO projectDTO = projectMapper.projectToDTO(project);
+
+
+            return ResponseEntity.ok(projectDTO);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/working")
+    public ResponseEntity<?> findWorking(){
+        try {
+            User user = authorizationService.getCurrentUser();
+            List<Project> projects = projectService.findAllProjectsWorking(user);
+
+            List<ProjectInfoDTO> projectListDTOS = projectMapper.listProjectsInfoDTO(projects);
+
+            return ResponseEntity.ok(projectListDTOS);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/managing")
+    public ResponseEntity<?> findManaging(){
+        try {
+            User user = authorizationService.getCurrentUser();
+            List<Project> projects = projectService.findAllProjectManaged(user);
+            List<ProjectInfoDTO> projectListDTOS = projectMapper.listProjectsInfoDTO(projects);
+
+            return ResponseEntity.ok(projectListDTOS);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 
     @PostMapping("/create")
-    public ResponseEntity<?> create(@RequestBody ProjectDTO data) {
+    public ResponseEntity<?> create(@RequestBody AddProjectDTO data) {
         try {
             User manager = authorizationService.getCurrentUser();
             projectService.create(data, manager);
@@ -37,14 +86,14 @@ public class ProjectController {
     }
 
     @PatchMapping("/update/{id}")
-    public ResponseEntity<?> update(@RequestBody ProjectDTO data, @PathVariable Long id){
+    public ResponseEntity<?> update(@RequestBody AddProjectDTO data, @PathVariable Long id){
         try {
             User manager = authorizationService.getCurrentUser();
             projectService.updateProject(id, data, manager);
             return ResponseEntity.ok(SuccessResponse.UPDATED);
         } catch (Exception e) {
         return ResponseEntity.badRequest().body(e.getMessage());
-    }
+        }
     }
 
     @PatchMapping("/addEmployee/{id}")

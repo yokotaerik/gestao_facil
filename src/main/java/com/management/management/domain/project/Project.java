@@ -1,5 +1,6 @@
 package com.management.management.domain.project;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.management.management.domain.task.Task;
 import com.management.management.domain.task.TaskStatus;
 import com.management.management.domain.user.User;

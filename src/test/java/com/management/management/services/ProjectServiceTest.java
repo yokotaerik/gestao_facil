@@ -2,7 +2,7 @@ package com.management.management.services;
 
 import com.management.management.domain.project.Project;
 import com.management.management.domain.user.User;
-import com.management.management.dtos.project.ProjectDTO;
+import com.management.management.dtos.project.AddProjectDTO;
 import com.management.management.exceptions.NotAllowedException;
 import com.management.management.repositories.ProjectRepository;
 import com.management.management.repositories.UserRepository;
@@ -17,7 +17,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 class ProjectServiceTest {
@@ -39,7 +38,7 @@ class ProjectServiceTest {
     @Test
     void testCreateProject() {
 
-        ProjectDTO projectDTO = new ProjectDTO("Projeto Teste", "Descrição do projeto teste", LocalDate.now().plusDays(7));
+        AddProjectDTO addProjectDTO = new AddProjectDTO("Projeto Teste", "Descrição do projeto teste", LocalDate.now().plusDays(7));
         User user = new User();
 
         when(projectRepository.save(any(Project.class))).thenAnswer(invocation -> {
@@ -48,7 +47,7 @@ class ProjectServiceTest {
             return savedProject;
         });
 
-        projectService.create(projectDTO, user);
+        projectService.create(addProjectDTO, user);
 
         verify(projectRepository, times(1)).save(any(Project.class));
         verify(userRepository, times(1)).save(any(User.class));
@@ -64,9 +63,9 @@ class ProjectServiceTest {
 
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
 
-        ProjectDTO projectDTO = new ProjectDTO("Curso", "Curso legal!", LocalDate.of(2025, 2, 28));
+        AddProjectDTO addProjectDTO = new AddProjectDTO("Curso", "Curso legal!", LocalDate.of(2025, 2, 28));
 
-        projectService.updateProject(1L, projectDTO, manager );
+        projectService.updateProject(1L, addProjectDTO, manager );
 
         verify(projectRepository, times(1)).save(any(Project.class));
 

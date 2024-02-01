@@ -2,7 +2,7 @@ package com.management.management.services;
 
 import com.management.management.domain.project.Project;
 import com.management.management.domain.user.User;
-import com.management.management.dtos.project.ProjectDTO;
+import com.management.management.dtos.project.AddProjectDTO;
 import com.management.management.exceptions.NotAllowedException;
 import com.management.management.repositories.ProjectRepository;
 import com.management.management.repositories.UserRepository;
@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class ProjectService {
@@ -20,12 +21,21 @@ public class ProjectService {
     @Autowired
     private UserRepository userRepository;
 
-    public Project findById(Long id){
+    public List<Project> findAllProjectsWorking(User employee) {
+        return employee.getProjectsWorked();
+    }
+
+    public List<Project> findAllProjectManaged(User manager) {
+        return manager.getProjectsManaged();
+    }
+
+
+    public Project findById(Long id) {
         return projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found: " + id));
     }
 
-    public void create(ProjectDTO data, User user) {
+    public void create(AddProjectDTO data, User user) {
 
         LocalDate now = LocalDate.now();
 
@@ -37,13 +47,19 @@ public class ProjectService {
         userRepository.save(user);
     }
 
+    public void userIsOnProject(User user, Project project) throws NotAllowedException {
+        if(!project.getEmployees().contains(user) || project.getManagers().contains(user)){
+            throw new NotAllowedException("You need be part of this project");
+        }
+    }
+
     public void checkManagerPermission(User manager, Project project) throws NotAllowedException {
         if (!isManager(manager, project)) {
             throw new NotAllowedException("You need to be a manager of this project");
         }
     }
 
-    public void updateProject(Long projectId, ProjectDTO newData, User manager) throws Exception {
+    public void updateProject(Long projectId, AddProjectDTO newData, User manager) throws Exception {
         Project project = findById(projectId);
 
         checkManagerPermission(manager, project);
@@ -86,7 +102,7 @@ public class ProjectService {
     }
 
 
-    public Boolean isManager(User manager, Project project){
+    public Boolean isManager(User manager, Project project) {
         return project.getManagers().contains(manager);
     }
 
@@ -126,6 +142,7 @@ public class ProjectService {
         userRepository.save(user);
         projectRepository.save(project);
     }
+
 
 
 }
