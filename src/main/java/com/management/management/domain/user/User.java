@@ -43,8 +43,8 @@ public class User implements UserDetails {
     @ManyToMany(mappedBy = "managers", cascade = CascadeType.ALL)
     private List<Project> projectsManaged = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "responsible", cascade = CascadeType.ALL)
-    private List<Task> tasks = new ArrayList<>();
+    @OneToMany(mappedBy = "responsible", cascade = CascadeType.ALL)
+    private List<Task> tasksResponsibleFor = new ArrayList<>();
 
     public User(Long id, String name, String surname, String username, String email, String password, UserRole role) {
         this.id = id;

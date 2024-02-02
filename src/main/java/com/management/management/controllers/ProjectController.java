@@ -29,6 +29,7 @@ public class ProjectController {
     @Autowired
     UserService userService;
 
+    @Autowired
     ProjectMapper projectMapper;
 
     @GetMapping("/{id}")

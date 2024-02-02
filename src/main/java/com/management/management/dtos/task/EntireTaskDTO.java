@@ -7,5 +7,5 @@ import com.management.management.dtos.user.UserInfoDTO;
 
 import java.util.List;
 
-public record EntireTaskDTO(Long id, String name, String description, TaskPriority priority, ProjectInfoDTO project, List<UserInfoDTO> responsible, TaskStatus status, int timeExpected) {
+public record EntireTaskDTO(Long id, String name, String description, TaskPriority priority, ProjectInfoDTO project, UserInfoDTO responsible, TaskStatus status, int timeExpected) {
 }

@@ -37,12 +37,9 @@ public class Task implements Serializable {
     @JoinColumn(name = "project_id")
     private Project project;
 
-    @ManyToMany
-    @JoinTable(
-            name = "task_responsible",
-            joinColumns = @JoinColumn(name = "task_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private List<User> responsible;
+    @ManyToOne
+    @JoinColumn(name = "responsible_id")
+    private User responsible;
 
     public Task(Long id, String name, String description, TaskPriority priority, int timeExpected, Project project) {
         this.id = id;

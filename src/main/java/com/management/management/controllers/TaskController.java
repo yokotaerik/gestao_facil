@@ -6,7 +6,9 @@ import com.management.management.domain.user.User;
 import com.management.management.dtos.task.EntireTaskDTO;
 import com.management.management.dtos.task.StatusDTO;
 import com.management.management.dtos.task.AddTaskDTO;
+import com.management.management.dtos.task.TaskInfoDTO;
 import com.management.management.dtos.user.UsernameDTO;
+import com.management.management.exceptions.NotAllowedException;
 import com.management.management.mapper.TaskMapper;
 import com.management.management.services.AuthorizationService;
 import com.management.management.services.ProjectService;
@@ -15,6 +17,8 @@ import com.management.management.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/task")
@@ -33,6 +37,7 @@ public class TaskController {
     @Autowired
     UserService userService;
 
+    @Autowired
     TaskMapper taskMapper;
 
 
@@ -63,6 +68,19 @@ public class TaskController {
         }
     }
 
+    @GetMapping("/me")
+    ResponseEntity<?> myTasks(){
+        try{
+            User user = authorizationService.getCurrentUser();
+            List<Task> tasks = taskService.findTasksByUser(user);
+            List<TaskInfoDTO> tasksDTO = taskMapper.taskInfoDTOList(tasks);
+            return ResponseEntity.ok(tasksDTO);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PatchMapping("/{id}/add")
     ResponseEntity<?> addResponsible(@RequestBody UsernameDTO data, @PathVariable Long id){
         try{
@@ -78,13 +96,12 @@ public class TaskController {
     }
 
     @PatchMapping("/{id}/remove")
-    ResponseEntity<?> removeResponsible(@RequestBody UsernameDTO data, @PathVariable Long id){
+    ResponseEntity<?> removeResponsible(@PathVariable Long id){
         try{
             User manager = authorizationService.getCurrentUser();
-            User responsible =  userService.findByUsername(data.username());
             Task task = taskService.findById(id);
 
-            taskService.removeResponsible(task, responsible, manager);
+            taskService.removeResponsible(task, manager);
             return ResponseEntity.ok().body("OK");
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());

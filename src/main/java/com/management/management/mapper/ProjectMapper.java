@@ -3,14 +3,19 @@ package com.management.management.mapper;
 import com.management.management.domain.project.Project;
 import com.management.management.dtos.project.EntireProjectDTO;
 import com.management.management.dtos.project.ProjectInfoDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
 public class ProjectMapper {
 
+    @Autowired
     TaskMapper taskMapper;
 
+    @Autowired
     UserMapper userMapper;
 
 

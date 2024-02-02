@@ -35,6 +35,7 @@ public class ProjectService {
                 .orElseThrow(() -> new IllegalArgumentException("Project not found: " + id));
     }
 
+
     public void create(AddProjectDTO data, User user) {
 
         LocalDate now = LocalDate.now();
@@ -48,8 +49,8 @@ public class ProjectService {
     }
 
     public void userIsOnProject(User user, Project project) throws NotAllowedException {
-        if(!project.getEmployees().contains(user) || project.getManagers().contains(user)){
-            throw new NotAllowedException("You need be part of this project");
+        if(!project.getEmployees().contains(user) && !project.getManagers().contains(user)){
+            throw new NotAllowedException("User need to be part of this project");
         }
     }
 

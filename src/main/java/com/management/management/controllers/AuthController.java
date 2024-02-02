@@ -63,7 +63,7 @@ public class AuthController {
     @PatchMapping("/change_password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO data){
         try{
-            User user = (User) authorizationService.getCurrentUser();
+            User user = authorizationService.getCurrentUser();
             userService.changePassword(user, data);
 
             return ResponseEntity.ok("Password successfully updated");
