@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.util.Optional;
 
 
 @Service
@@ -28,6 +29,12 @@ public class UserService {
     public User findByUsername(String username){
        return userRepository.findByUsername(username)
                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+    }
+
+    private Optional<User> findByUsernameToGenerateName(String username){
+
+        return userRepository.findByUsername(username);
+
     }
 
     public void create(RegisterDTO data) throws Exception {
@@ -93,15 +100,17 @@ public class UserService {
         String[] firstName = name.split(" ");
         String[] lastName = surname.split(" ");
 
-        String username = String.join(".",firstName).toLowerCase() + "." + lastName[lastName.length - 1].toLowerCase();
+        String username = String.join(".", firstName).toLowerCase() + "." + lastName[lastName.length - 1].toLowerCase();
 
-        User user = findByUsername(username);
+        Optional<User> optionalUser = findByUsernameToGenerateName(username);
 
-        int count = 1;
-        while (user != null) {
-            username = username + count;
-            user = findByUsername(username);
-            count += 1;
+        if (optionalUser.isPresent()) {
+            int count = 1;
+            while (optionalUser.isPresent()) {
+                username = username + count;
+                optionalUser = findByUsernameToGenerateName(username);
+                count += 1;
+            }
         }
 
         return username;

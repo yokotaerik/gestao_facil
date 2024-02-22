@@ -6,10 +6,12 @@ import com.management.management.dtos.project.AddProjectDTO;
 import com.management.management.dtos.project.EntireProjectDTO;
 import com.management.management.dtos.project.ProjectInfoDTO;
 import com.management.management.dtos.user.UsernameDTO;
+import com.management.management.exceptions.NotAllowedException;
 import com.management.management.mapper.ProjectMapper;
 import com.management.management.services.AuthorizationService;
 import com.management.management.services.ProjectService;
 import com.management.management.services.UserService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,8 +38,7 @@ public class ProjectController {
     public ResponseEntity<?> findProjectById(@PathVariable Long id){
         try{
             User user = authorizationService.getCurrentUser();
-
-            Project project = projectService.findById(id);
+            Project project = projectService.getProjectInfo(id, user);
             EntireProjectDTO projectDTO = projectMapper.projectToDTO(project);
 
 
@@ -79,8 +80,8 @@ public class ProjectController {
     public ResponseEntity<?> create(@RequestBody AddProjectDTO data) {
         try {
             User manager = authorizationService.getCurrentUser();
-            projectService.create(data, manager);
-            return ResponseEntity.ok(SuccessResponse.CREATED);
+            Long id = projectService.create(data, manager);
+            return ResponseEntity.ok(id);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -102,7 +103,7 @@ public class ProjectController {
         try {
             User manager = authorizationService.getCurrentUser();
             Project project = projectService.findById(id);
-            User employee =  userService.findByUsername(data.username());
+            User employee = (User) authorizationService.loadUserByUsername(data.username());
             projectService.addEmployee(project, employee, manager);
             return ResponseEntity.ok(SuccessResponse.ADDED);
         } catch (Exception e) {
@@ -115,7 +116,7 @@ public class ProjectController {
         try {
             User manager = authorizationService.getCurrentUser();
             Project project = projectService.findById(id);
-            User newManager = userService.findByUsername(data.username());
+            User newManager = (User) authorizationService.loadUserByUsername(data.username());
             projectService.addManager(project, newManager, manager);
             return ResponseEntity.ok(SuccessResponse.ADDED);
         } catch (Exception e) {
@@ -128,7 +129,7 @@ public class ProjectController {
         try {
             User manager = authorizationService.getCurrentUser();
             Project project = projectService.findById(id);
-            User employee =  userService.findByUsername(data.username());
+            User employee =  (User) authorizationService.loadUserByUsername(data.username());
             projectService.removeEmployee(project, employee, manager);
             return ResponseEntity.ok(SuccessResponse.REMOVED);
         } catch (Exception e) {
@@ -141,10 +142,23 @@ public class ProjectController {
         try {
             User manager = authorizationService.getCurrentUser();
             Project project = projectService.findById(id);
-            User newManager =  userService.findByUsername(data.username());
+            User newManager =  (User) authorizationService.loadUserByUsername(data.username());
             projectService.removeManager(project, newManager, manager);
             return ResponseEntity.ok(SuccessResponse.REMOVED);
         } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteProject(@PathVariable Long id) throws NotAllowedException {
+        try {
+            User manager = authorizationService.getCurrentUser();
+            Project project = projectService.findById(id);
+            projectService.deleteProject(project, manager);
+            return ResponseEntity.ok(SuccessResponse.REMOVED);
+        }  catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

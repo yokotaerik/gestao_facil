@@ -14,8 +14,10 @@ import com.management.management.services.AuthorizationService;
 import com.management.management.services.ProjectService;
 import com.management.management.services.TaskService;
 import com.management.management.services.UserService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +43,7 @@ public class TaskController {
     TaskMapper taskMapper;
 
 
+    @Validated
     @PostMapping("/create/{id}")
     ResponseEntity<?> createTask(@RequestBody AddTaskDTO data, @PathVariable Long id){
         try{
@@ -81,11 +84,12 @@ public class TaskController {
         }
     }
 
-    @PatchMapping("/{id}/add")
+    @Validated
+    @PatchMapping("/{id}/add_responsible")
     ResponseEntity<?> addResponsible(@RequestBody UsernameDTO data, @PathVariable Long id){
         try{
             User manager = authorizationService.getCurrentUser();
-            User responsible = userService.findByUsername(data.username());
+            User responsible = (User) authorizationService.loadUserByUsername(data.username());
             Task task = taskService.findById(id);
 
             taskService.addResponsible(task, responsible, manager);
@@ -95,8 +99,8 @@ public class TaskController {
         }
     }
 
-    @PatchMapping("/{id}/remove")
-    ResponseEntity<?> removeResponsible(@PathVariable Long id){
+    @PatchMapping("/{id}/remove_responsible")
+    ResponseEntity<?> removeResponsible(@PathVariable Long id ){
         try{
             User manager = authorizationService.getCurrentUser();
             Task task = taskService.findById(id);
@@ -108,6 +112,7 @@ public class TaskController {
         }
     }
 
+    @Validated
     @PatchMapping("/{id}/status")
     ResponseEntity<?> updateStatus(@RequestBody StatusDTO data, @PathVariable Long id){
         try{
@@ -129,6 +134,18 @@ public class TaskController {
             taskService.deleteTask(task, manager);
             return ResponseEntity.ok().body("OK");
         } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/update/{id}")
+    ResponseEntity<?> updateTask(@PathVariable Long id, @RequestBody AddTaskDTO data){
+        try{
+            User manager = authorizationService.getCurrentUser();
+            Task task = taskService.findById(id);
+            taskService.updateTask(data, task, manager);
+            return ResponseEntity.ok().body("OK");
+        }  catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

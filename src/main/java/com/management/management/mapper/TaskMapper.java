@@ -5,6 +5,7 @@ import com.management.management.domain.task.Task;
 import com.management.management.dtos.project.ProjectInfoDTO;
 import com.management.management.dtos.task.EntireTaskDTO;
 import com.management.management.dtos.task.TaskInfoDTO;
+import com.management.management.dtos.user.UserInfoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,17 +24,35 @@ public class TaskMapper {
     }
 
     public TaskInfoDTO taskInfoDTO(Task task){
-        return new TaskInfoDTO(task.getName(), task.getDescription(), task.getTimeExpected(), task.getPriority(), task.getStatus());
+        UserInfoDTO responsibleDTO = null;
+        if (task.getResponsible() != null) {
+            responsibleDTO = userMapper.userInfoDTO(task.getResponsible());
+        }
+        return new TaskInfoDTO(
+                task.getId(),
+                task.getName(),
+                task.getDescription(),
+                task.getTimeExpected(),
+                task.getPriority(),
+                task.getStatus(),
+                task.getProject().getName(),
+                responsibleDTO
+        );
     }
 
     public EntireTaskDTO entireTaskDTO(Task task){
+        UserInfoDTO responsibleDTO = null;
+        if (task.getResponsible() != null) {
+            responsibleDTO = userMapper.userInfoDTO(task.getResponsible());
+        }
+
         return new EntireTaskDTO(
                 task.getId(),
                 task.getName(),
                 task.getDescription(),
                 task.getPriority(),
                 projectInfoDTO(task.getProject()),
-                userMapper.userInfoDTO(task.getResponsible()),
+                responsibleDTO,
                 task.getStatus(),
                 task.getTimeExpected());
     }

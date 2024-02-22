@@ -14,7 +14,7 @@ public record EntireProjectDTO(Long id,
                                Double progress,
                                LocalDate createdAt,
                                LocalDate finishAt,
-                               List<UserInfoDTO> employee,
+                               List<UserInfoDTO> employees,
                                List<UserInfoDTO> managers,
                                List<TaskInfoDTO> tasks
 

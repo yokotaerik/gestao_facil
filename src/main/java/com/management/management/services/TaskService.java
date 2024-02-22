@@ -45,6 +45,35 @@ public class TaskService {
         taskRepository.save(task);
     }
 
+    public void updateTask(AddTaskDTO data, Task task, User manager) throws NotAllowedException {
+
+        Project project = task.getProject();
+
+        projectService.checkManagerPermission(manager, project);
+        if (data != null) {
+            if (data.name() != null) {
+                task.setName(data.name());
+            }
+
+            if (data.description() != null) {
+                task.setDescription(data.description());
+            }
+
+            if (data.taskPriority() != null) {
+                task.setPriority(data.taskPriority());
+            }
+
+            if (data.timeExpected() != 0){
+                task.setTimeExpected(data.timeExpected());
+            }
+
+            taskRepository.save(task);
+            project.calculateTimeExpected();
+            project.calculateProgress();
+            projectRepository.save(project);
+        }
+    }
+
     public void addResponsible(Task task, User responsible, User manager) throws Exception {
         Project project = task.getProject();
         projectService.checkManagerPermission(manager, project);
@@ -99,9 +128,11 @@ public class TaskService {
 
         Project project = task.getProject();
         project.getTasks().remove(task);
-        User user = task.getResponsible();
-        user.getTasksResponsibleFor().remove(task);
-        task.setResponsible(null);
+        if (task.getResponsible() != null){
+            User user = task.getResponsible();
+            user.getTasksResponsibleFor().remove(task);
+            task.setResponsible(null);
+        }
         project.calculateTimeExpected();
         project.calculateProgress();
         taskRepository.delete(task);

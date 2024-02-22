@@ -1,4 +1,6 @@
 package com.management.management.dtos.user;
 
-public record UsernameDTO(String username) {
+import org.jetbrains.annotations.NotNull;
+
+public record UsernameDTO(@NotNull String username) {
 }

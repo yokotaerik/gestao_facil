@@ -1,16 +1,19 @@
 package com.management.management.services;
 
 import com.management.management.domain.project.Project;
+import com.management.management.domain.task.Task;
 import com.management.management.domain.user.User;
 import com.management.management.dtos.project.AddProjectDTO;
 import com.management.management.exceptions.NotAllowedException;
 import com.management.management.repositories.ProjectRepository;
+import com.management.management.repositories.TaskRepository;
 import com.management.management.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectService {
@@ -21,6 +24,9 @@ public class ProjectService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private TaskRepository taskRepository;
+
     public List<Project> findAllProjectsWorking(User employee) {
         return employee.getProjectsWorked();
     }
@@ -30,13 +36,21 @@ public class ProjectService {
     }
 
 
-    public Project findById(Long id) {
+    public Project findById(Long id) throws NotAllowedException {
         return projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found: " + id));
     }
 
 
-    public void create(AddProjectDTO data, User user) {
+    public Project getProjectInfo(Long id, User user) throws NotAllowedException {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found: " + id));
+        userIsOnProject(user, project);
+        return project;
+    }
+
+
+    public Long create(AddProjectDTO data, User user) {
 
         LocalDate now = LocalDate.now();
 
@@ -46,6 +60,7 @@ public class ProjectService {
         user.getProjectsManaged().add(project);
         projectRepository.save(project);
         userRepository.save(user);
+        return project.getId();
     }
 
     public void userIsOnProject(User user, Project project) throws NotAllowedException {
@@ -98,6 +113,9 @@ public class ProjectService {
     }
 
     public void removeManager(Project project, User managerToRemove, User manager) throws NotAllowedException {
+        if(project.getManagers().size() <= 1){
+            throw new NotAllowedException("Must have one manager");
+        }
         checkManagerPermission(manager, project);
         handleRemoveManager(managerToRemove, project);
     }
@@ -133,17 +151,36 @@ public class ProjectService {
     private void handleRemoveEmployee(User user, Project project) {
         user.getProjectsWorked().remove(project);
         project.getEmployees().remove(user);
+        user.getTasksResponsibleFor()
+                .stream()
+                .filter(task -> task.getProject().equals(project))
+                .forEach(task -> {
+                    User responsible = task.getResponsible();
+                    responsible.getTasksResponsibleFor().remove(task);
+                    task.setResponsible(null);
+                    userRepository.save(responsible);
+                    taskRepository.save(task);
+                });
+
         userRepository.save(user);
         projectRepository.save(project);
     }
 
-    private void handleRemoveManager(User user, Project project) {
+    private void handleRemoveManager(User user, Project project) throws NotAllowedException {
+        if(project.getManagers().size() == 1){
+            throw new NotAllowedException("Must have at least 1 manager");
+        }
         user.getProjectsManaged().remove(project);
         project.getManagers().remove(user);
         userRepository.save(user);
         projectRepository.save(project);
     }
 
+
+    public void deleteProject(Project project, User user){
+        isManager(user, project);
+        projectRepository.delete(project);
+    }
 
 
 }

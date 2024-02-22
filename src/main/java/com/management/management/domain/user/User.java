@@ -93,4 +93,8 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public String getGeneratedUsername(){
+        return this.username;
+    }
 }

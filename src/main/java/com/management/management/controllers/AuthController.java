@@ -47,15 +47,17 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO data) {
         try {
-            var usernamePassword = new UsernamePasswordAuthenticationToken(data.username(), data.password());
+            var usernamePassword = new UsernamePasswordAuthenticationToken(data.email(), data.password());
             var auth = authenticationManager.authenticate(usernamePassword);
-            var token = tokenService.generateToken((User) auth.getPrincipal());
+            var user = (User) auth.getPrincipal();
+            var token = tokenService.generateToken(user);
+            var fullName = user.getName() + " " + user.getSurname();
 
             return ResponseEntity.ok(new LoginResponseDTO(token));
         } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new LoginResponseDTO(null));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new LoginResponseDTO(null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
